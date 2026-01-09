@@ -156,14 +156,14 @@ st.markdown("""
 
 # Header
 st.markdown('<h1 class="main-header">⚖️ Legal Aid Assistant</h1>', unsafe_allow_html=True)
-st.markdown('<p class="sub-header">Upload legal documents and ask questions powered by local AI (Ollama + FAISS)</p>', unsafe_allow_html=True)
+st.markdown('<p class="sub-header">Upload legal documents and ask questions powered by local AI Assistant</p>', unsafe_allow_html=True)
 
 # Check backend status
 backend_online = check_backend_status()
 
 if backend_online:
     st.markdown(
-        '<div class="status-box status-online">✅ <b>Backend Status:</b> Online and Ready | All processing happens locally on your machine</div>',
+        '<div class="status-box status-online">✅ <b>Backend Status:</b> Working..</div>',
         unsafe_allow_html=True
     )
     
@@ -267,11 +267,11 @@ if st.session_state.show_delete_confirm:
                     st.session_state.show_delete_confirm = False
                     st.rerun()
                 else:
-                    st.error(f"❌ {result.get('message')}")
+                    st.error(f"{result.get('message')}")
             st.session_state.show_delete_confirm = False
     
     with col2:
-        if st.button("❌ Cancel", use_container_width=True):
+        if st.button("Cancel", use_container_width=True):
             st.session_state.show_delete_confirm = False
             st.rerun()
 
@@ -331,10 +331,9 @@ with tab1:
                     with col2:
                         st.metric("📁 Filename", result.get('filename', 'N/A'))
                     
-                    st.balloons()
                     st.info("You can now ask questions about this document in the 'Ask Questions' tab!")
                 else:
-                    st.error(f"❌ {result.get('message')}")
+                    st.error(f"{result.get('message')}")
                     st.warning("**Troubleshooting tips:**\n- Ensure PDF is not password-protected\n- Check if Ollama is running\n- Verify models are installed: `ollama list`")
 
 # Tab 2: Query Interface
@@ -367,7 +366,7 @@ with tab2:
         if not question.strip():
             st.warning("⚠️ Please enter a question.")
         else:
-            with st.spinner("🤔 Searching documents and generating answer... (this may take 30-60 seconds)"):
+            with st.spinner("Searching documents and generating answer... (this may take 30-60 seconds)"):
                 # Show processing steps
                 status_text = st.empty()
                 
@@ -377,7 +376,7 @@ with tab2:
                 status_text.text("2/3: Searching vector database...")
                 time.sleep(0.5)
                 
-                status_text.text("3/3: Generating grounded answer with LLaMA3...")
+                status_text.text("3/3: Generating answer...")
                 
                 # Query the assistant
                 response = query_assistant(question)
@@ -498,20 +497,11 @@ with st.sidebar:
     st.markdown("""
     **Legal Aid Assistant** uses Retrieval-Augmented Generation (RAG) to provide accurate answers grounded in your legal documents.
     
-    **Technology Stack:**
-    - 🤖 **LLM:** Ollama (llama3:8b)
-    - 🔤 **Embeddings:** nomic-embed-text
-    - 🗂️ **Vector DB:** FAISS
-    - 🚀 **Backend:** FastAPI
-    - 🎨 **Frontend:** Streamlit
-    
     **Features:**
     - 🔒 100% Local Processing
     - 📄 PDF Document Upload
     - 🔍 Semantic Search
-    - 💡 Grounded AI Answers
-    - 📊 Case Summaries
-    - 📅 Case Timelines
+    - 💡 Relevant AI Answers
     - 🚫 No Data Leaves Your Machine
     """)
     
@@ -522,8 +512,7 @@ with st.sidebar:
     1. **Upload** a legal PDF document
     2. **Wait** for processing (1-2 min)
     3. **Ask** questions in natural language
-    4. **Generate** case summaries or timelines
-    5. **Review** AI-generated insights
+    4. **Review** AI-generated insights
     """)
     
     st.markdown("---")
@@ -542,16 +531,15 @@ with st.sidebar:
         embedding_available = status.get('embedding_model_available', False)
         llm_available = status.get('llm_model_available', False)
         
-        st.markdown("**Ollama Models:**")
         if ollama_status == "connected":
             if embedding_available:
-                st.success("✅ Embedding Model (nomic-embed-text)")
+                st.markdown("")
             else:
                 st.warning("⚠️ Embedding Model Missing")
                 st.code("ollama pull nomic-embed-text", language="bash")
             
             if llm_available:
-                st.success("✅ LLM Model (llama3:8b)")
+                st.markdown("")
             else:
                 st.warning("⚠️ LLM Model Missing")
                 st.code("ollama pull llama3:8b", language="bash")
@@ -584,7 +572,6 @@ st.markdown(
     """
     <div style='text-align: center; color: #888; font-size: 0.9rem; padding: 1rem;'>
     <p>🔐 <b>Privacy-First:</b> All processing happens locally. No data is sent to external servers.</p>
-    <p>⚖️ Powered by Ollama (llama3:8b + nomic-embed-text) • Built with FastAPI & Streamlit</p>
     </div>
     """,
     unsafe_allow_html=True
