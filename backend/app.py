@@ -2,17 +2,22 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
+import sys
 import shutil
 from pathlib import Path
 import PyPDF2
 from typing import Optional
+import requests
+
+# Add backend directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent))
 
 # Import existing modules
-from .chunking import LegalChunker
-from .embeddings import OllamaEmbeddings
-from .vector_store import FAISSVectorStore
-from .retrieval import RetrievalPipeline
-from .generation import LegalAnswerGenerator
+from chunking import LegalChunker
+from embeddings import OllamaEmbeddings
+from vector_store import FAISSVectorStore
+from retrieval import RetrievalPipeline
+from generation import LegalAnswerGenerator
 
 app = FastAPI(title="Legal Aid Assistant API")
 
@@ -48,6 +53,11 @@ class UploadResponse(BaseModel):
     message: str
     filename: Optional[str] = None
     chunks_processed: Optional[int] = None
+
+class DeleteResponse(BaseModel):
+    success: bool
+    message: str
+    chunks_deleted: Optional[int] = None
 
 def extract_text_from_pdf(pdf_path: Path) -> str:
     """
@@ -87,12 +97,12 @@ async def startup_event():
         loaded = vs.load()
         if loaded:
             vector_store = vs
-            print("✓ Existing vector store loaded successfully")
+            print("[OK] Existing vector store loaded successfully")
         else:
             vector_store = vs
-            print("ℹ No existing vector store found. Ready to create a new one on first upload.")
+            print("[INFO] No existing vector store found. Ready to create a new one on first upload.")
     except Exception as e:
-        print(f"✗ Error initializing vector store: {e}")
+        print(f"[ERROR] Error initializing vector store: {e}")
         vector_store = None
 
 @app.get("/")
@@ -122,7 +132,7 @@ async def upload_pdf(file: UploadFile = File(...)):
     Returns:
         UploadResponse with success status and details
     """
-    global vector_store, chunker, embeddings_client
+    global vector_store, embeddings_client, chunker
     
     # Validate file type
     if not file.filename.endswith('.pdf'):
@@ -134,14 +144,14 @@ async def upload_pdf(file: UploadFile = File(...)):
         with open(file_path, 'wb') as buffer:
             shutil.copyfileobj(file.file, buffer)
         
-        print(f"✓ PDF saved: {file.filename}")
+        print(f"[OK] PDF saved: {file.filename}")
         
         # Extract text from PDF
         text = extract_text_from_pdf(file_path)
         if not text.strip():
             raise Exception("No text could be extracted from PDF")
         
-        print(f"✓ Text extracted: {len(text)} characters")
+        print(f"[OK] Text extracted: {len(text)} characters")
         
         # Chunk the text using legal-aware chunking
         if chunker is None:
@@ -151,7 +161,7 @@ async def upload_pdf(file: UploadFile = File(...)):
         if not chunk_objs:
             raise Exception("No chunks generated from text")
 
-        print(f"✓ Text chunked: {len(chunk_objs)} chunks created")
+        print(f"[OK] Text chunked: {len(chunk_objs)} chunks created")
 
         # Prepare texts for embedding
         texts = [c.content for c in chunk_objs]
@@ -160,8 +170,24 @@ async def upload_pdf(file: UploadFile = File(...)):
         if embeddings_client is None:
             embeddings_client = OllamaEmbeddings()
 
-        embeddings = embeddings_client.embed_batch(texts)
-        print(f"✓ Embeddings generated: {len(embeddings)} vectors")
+        try:
+            embeddings = embeddings_client.embed_batch(texts)
+        except Exception as e:
+            error_msg = str(e)
+            if "Connection" in error_msg or "refused" in error_msg:
+                raise Exception(
+                    "Cannot connect to Ollama. Please ensure Ollama is running on http://localhost:11434. "
+                    "Start it with: ollama serve"
+                )
+            elif "nomic-embed-text" in error_msg:
+                raise Exception(
+                    "Embedding model 'nomic-embed-text' not found. "
+                    "Pull it with: ollama pull nomic-embed-text"
+                )
+            else:
+                raise Exception(f"Embedding generation failed: {error_msg}")
+        
+        print(f"[OK] Embeddings generated: {len(embeddings)} vectors")
 
         # Create or update vector store
         if vector_store is None or vector_store.index is None:
@@ -174,13 +200,13 @@ async def upload_pdf(file: UploadFile = File(...)):
             vs.add_chunks(embeddings, metadata)
             vs.save()
             vector_store = vs
-            print(f"✓ New vector store created")
+            print(f"[OK] New vector store created")
         else:
             # Add to existing vector store
             metadata = [ {**c.metadata, 'content': c.content, 'chunk_id': c.chunk_id} for c in chunk_objs ]
             vector_store.add_chunks(embeddings, metadata)
             vector_store.save()
-            print(f"✓ Vector store updated")
+            print(f"[OK] Vector store updated")
         
         return UploadResponse(
             success=True,
@@ -190,7 +216,7 @@ async def upload_pdf(file: UploadFile = File(...)):
         )
         
     except Exception as e:
-        print(f"✗ Error processing PDF: {str(e)}")
+        print(f"[ERROR] Error processing PDF: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to process PDF: {str(e)}")
 
 @app.post("/query", response_model=QueryResponse)
@@ -222,7 +248,7 @@ async def query_legal_assistant(request: QueryRequest):
         if not question:
             raise HTTPException(status_code=400, detail="Question cannot be empty")
         
-        print(f"📝 Query received: {question}")
+        print(f"[QUERY] Query received: {question}")
         
         # Build retrieval pipeline and retrieve context
         if embeddings_client is None:
@@ -237,7 +263,7 @@ async def query_legal_assistant(request: QueryRequest):
                 sources=[]
             )
 
-        print(f"✓ Retrieved {len(retrieval_results.get('results', []))} relevant chunks")
+        print(f"[OK] Retrieved {len(retrieval_results.get('results', []))} relevant chunks")
 
         # Format context and generate answer
         context_str = pipeline.format_context_for_generation(retrieval_results)
@@ -263,13 +289,63 @@ async def query_legal_assistant(request: QueryRequest):
     except HTTPException:
         raise
     except Exception as e:
-        print(f"✗ Error processing query: {str(e)}")
+        print(f"[ERROR] Error processing query: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to process query: {str(e)}")
+
+@app.delete("/delete-all", response_model=DeleteResponse)
+async def delete_all_chunks():
+    """
+    Delete all chunks from the vector store and clear uploaded files.
+    This allows users to start fresh with new documents.
+    
+    Returns:
+        DeleteResponse with success status and details
+    """
+    global vector_store
+    
+    try:
+        chunks_deleted = 0
+        
+        # Get count before deletion
+        if vector_store is not None and vector_store.index is not None:
+            chunks_deleted = vector_store.index.ntotal
+        
+        # Clear the vector store
+        if vector_store is not None:
+            vector_store.clear()
+            print("[OK] Vector store cleared")
+        
+        # Delete all files from the vector store directory
+        if VECTOR_STORE_PATH.exists():
+            for file_path in VECTOR_STORE_PATH.rglob('*'):
+                if file_path.is_file():
+                    file_path.unlink()
+                    print(f"[OK] Deleted: {file_path.name}")
+        
+        # Optionally delete uploaded PDFs (uncomment if you want to delete uploaded files too)
+        # if UPLOAD_DIR.exists():
+        #     for file_path in UPLOAD_DIR.glob('*.pdf'):
+        #         file_path.unlink()
+        #         print(f"✓ Deleted uploaded file: {file_path.name}")
+        
+        # Reinitialize empty vector store
+        vector_store = FAISSVectorStore(str(VECTOR_STORE_PATH))
+        print("[OK] Vector store reinitialized")
+        
+        return DeleteResponse(
+            success=True,
+            message="All chunks deleted successfully. Vector store has been reset.",
+            chunks_deleted=chunks_deleted
+        )
+        
+    except Exception as e:
+        print(f"[ERROR] Error deleting chunks: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete chunks: {str(e)}")
 
 @app.get("/status")
 async def get_status():
     """Get system status including document count."""
-    global vector_store
+    global vector_store, embeddings_client
     
     doc_count = 0
     if vector_store is not None and vector_store.index is not None:
@@ -278,11 +354,32 @@ async def get_status():
         except:
             doc_count = "unknown"
     
+    # Check Ollama connectivity
+    ollama_status = "unknown"
+    try:
+        if embeddings_client:
+            response = requests.get("http://localhost:11434/api/tags", timeout=5)
+            ollama_status = "connected" if response.status_code == 200 else "error"
+            models = response.json().get('models', []) if response.status_code == 200 else []
+            embedding_model_available = any(m['name'].startswith('nomic-embed-text') for m in models)
+            llm_model_available = any(m['name'].startswith('llama3') for m in models)
+        else:
+            ollama_status = "not_initialized"
+            embedding_model_available = False
+            llm_model_available = False
+    except Exception as e:
+        ollama_status = f"error: {str(e)}"
+        embedding_model_available = False
+        llm_model_available = False
+    
     return {
         "vector_store_initialized": vector_store is not None and vector_store.index is not None,
         "documents_indexed": doc_count,
         "upload_directory": str(UPLOAD_DIR),
-        "vector_store_path": str(VECTOR_STORE_PATH)
+        "vector_store_path": str(VECTOR_STORE_PATH),
+        "ollama_status": ollama_status,
+        "embedding_model_available": embedding_model_available,
+        "llm_model_available": llm_model_available
     }
 
 if __name__ == "__main__":

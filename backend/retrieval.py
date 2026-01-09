@@ -1,6 +1,6 @@
 from typing import List, Dict, Any
-from .embeddings import OllamaEmbeddings
-from .vector_store import FAISSVectorStore
+from embeddings import OllamaEmbeddings
+from vector_store import FAISSVectorStore
 
 
 class RetrievalPipeline:
@@ -104,3 +104,50 @@ class RetrievalPipeline:
             )
         
         return "\n---\n".join(context_parts)
+    
+    def get_all_chunks_for_summary(self) -> Dict[str, Any]:
+        """
+        Retrieve all chunks from vector store for case summary generation.
+        
+        Returns:
+            Dictionary with all chunks organized by section type
+        """
+        try:
+            if not self.vector_store or not self.vector_store.metadata:
+                return {
+                    'success': False,
+                    'error': 'No documents available',
+                    'chunks': []
+                }
+            
+            # Get all metadata (which contains content and section info)
+            all_chunks = []
+            for metadata in self.vector_store.metadata:
+                all_chunks.append({
+                    'content': metadata.get('content', ''),
+                    'case_name': metadata.get('case_name', 'Unknown'),
+                    'section_type': metadata.get('section_type', 'general'),
+                    'paragraph_range': metadata.get('paragraph_range', 'N/A')
+                })
+            
+            # Organize by section type
+            organized = {}
+            for chunk in all_chunks:
+                section = chunk['section_type']
+                if section not in organized:
+                    organized[section] = []
+                organized[section].append(chunk)
+            
+            return {
+                'success': True,
+                'chunks': all_chunks,
+                'organized': organized,
+                'total_chunks': len(all_chunks)
+            }
+            
+        except Exception as e:
+            return {
+                'success': False,
+                'error': f'Error retrieving chunks: {str(e)}',
+                'chunks': []
+            }
