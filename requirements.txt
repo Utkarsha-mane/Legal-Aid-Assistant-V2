@@ -1,0 +1,25 @@
+# Core FastAPI and Web Server
+fastapi
+uvicorn
+python-multipart
+pydantic
+
+# PDF Processing
+PyPDF2
+
+# Vector Store and ML
+faiss-cpu
+numpy
+
+# HTTP Requests (for Ollama connection)
+requests
+
+# Audio Transcription (Whisper AI - FREE)
+faster-whisper
+pydub
+
+# Environment Variables
+python-dotenv
+
+# CORS Middleware
+python-cors

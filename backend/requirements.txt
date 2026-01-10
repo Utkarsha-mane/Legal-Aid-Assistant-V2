@@ -6,3 +6,6 @@ numpy
 requests
 pydantic
 uvicorn
+PyPDF2
+python-dotenv
+openai
