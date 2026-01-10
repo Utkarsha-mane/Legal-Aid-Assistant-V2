@@ -1,25 +1,11 @@
-# Core FastAPI and Web Server
-fastapi
-uvicorn
-python-multipart
-pydantic
-
-# PDF Processing
-PyPDF2
-
-# Vector Store and ML
-faiss-cpu
-numpy
-
-# HTTP Requests (for Ollama connection)
-requests
-
-# Audio Transcription (Whisper AI - FREE)
-faster-whisper
-pydub
-
-# Environment Variables
-python-dotenv
-
-# CORS Middleware
-python-cors
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+pydantic==2.5.0
+PyPDF2==3.0.1
+faiss-cpu==1.7.4
+numpy==1.24.3
+requests==2.31.0
+faster-whisper==0.10.0
+pydub==0.25.1
+python-dotenv==1.0.0
