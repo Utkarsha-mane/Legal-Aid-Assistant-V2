@@ -1,7 +1,84 @@
 {
   "dimension": 768,
-  "total_chunks": 11,
+  "total_chunks": 22,
   "metadata": [
+    {
+      "case_name": "Dummy_Complex_Court_Case_Judgment.pdf",
+      "paragraph_range": "N/A",
+      "section_type": "case_metadata",
+      "content": "--- Page 1 ---\nIN THE HIGH COURT OF ARANYA PRADESH\nCriminal Appeal No. 214 of 2022\nRamesh Kumar … Appellant\nVersus\nState of Aranya Pradesh … Respondent",
+      "chunk_id": "chunk_0_case_metadata"
+    },
+    {
+      "case_name": "Dummy_Complex_Court_Case_Judgment.pdf",
+      "paragraph_range": "N/A",
+      "section_type": "decision",
+      "content": "--- Page 2 ---\nJUDGMENT",
+      "chunk_id": "chunk_1_decision"
+    },
+    {
+      "case_name": "Dummy_Complex_Court_Case_Judgment.pdf",
+      "paragraph_range": "1-1",
+      "section_type": "facts",
+      "content": "1. The present criminal appeal is directed against the judgment dated 12.03.2022 passed by the Sessions\nCourt, Nandipur, whereby the appellant was convicted under Sections 302 and 201 of the Indian Penal\nCode, 1860 and sentenced to imprisonment for life.\nFACTS OF THE CASE",
+      "chunk_id": "chunk_2_facts"
+    },
+    {
+      "case_name": "Dummy_Complex_Court_Case_Judgment.pdf",
+      "paragraph_range": "2-4",
+      "section_type": "general_content",
+      "content": "2. The prosecution case, in brief, is that on the night of 18.07.2021, the deceased Suresh Patel was found\ndead near the agricultural fields of Village Nandipur. The FIR was lodged by PW-1, the brother of the\ndeceased, alleging that the appellant had a longstanding land dispute with the deceased.\n\n3. It was alleged that on 17.07.2021, the appellant was last seen arguing with the deceased near a local tea\nstall. The body was discovered the next morning with multiple head injuries. The post-mortem report\nindicated death due to cranio-cerebral damage.\nISSUES FOR DETERMINATION\n\n4. Whether the prosecution has proved beyond reasonable doubt that the appellant caused the death of the\ndeceased.",
+      "chunk_id": "chunk_3_general_content"
+    },
+    {
+      "case_name": "Dummy_Complex_Court_Case_Judgment.pdf",
+      "paragraph_range": "5-6",
+      "section_type": "evidence",
+      "content": "5. Whether the conviction can be sustained solely on circumstantial evidence.\nARGUMENTS ON BEHALF OF THE APPELLANT\n\n6. Learned counsel for the appellant contended that there is no direct evidence linking the appellant to the\ncrime. It was argued that the 'last seen' theory is weak and unreliable as there is a considerable time gap\nbetween the alleged last seen and the discovery of the body.\nARGUMENTS ON BEHALF OF THE STATE",
+      "chunk_id": "chunk_4_evidence"
+    },
+    {
+      "case_name": "Dummy_Complex_Court_Case_Judgment.pdf",
+      "paragraph_range": "7-7",
+      "section_type": "facts",
+      "content": "7. Learned Public Prosecutor submitted that the chain of circumstances is complete. The motive, last seen\nevidence, recovery of the weapon at the instance of the appellant, and medical evidence cumulatively\nestablish guilt.",
+      "chunk_id": "chunk_5_facts"
+    },
+    {
+      "case_name": "Dummy_Complex_Court_Case_Judgment.pdf",
+      "paragraph_range": "N/A",
+      "section_type": "reasoning",
+      "content": "--- Page 3 ---\nCOURT'S ANALYSIS AND REASONING",
+      "chunk_id": "chunk_6_reasoning"
+    },
+    {
+      "case_name": "Dummy_Complex_Court_Case_Judgment.pdf",
+      "paragraph_range": "8-9",
+      "section_type": "evidence",
+      "content": "8. This Court has carefully examined the evidence on record. It is settled law that a conviction based on\ncircumstantial evidence must satisfy the test laid down in Sharad Birdhichand Sarda v. State of Maharashtra.\n\n9. The 'last seen' evidence in the present case establishes proximity of time between the appellant and the\ndeceased. The recovery of the blood-stained weapon pursuant to the appellant's disclosure statement\nfurther strengthens the prosecution case.",
+      "chunk_id": "chunk_7_evidence"
+    },
+    {
+      "case_name": "Dummy_Complex_Court_Case_Judgment.pdf",
+      "paragraph_range": "10-10",
+      "section_type": "facts",
+      "content": "10. The explanation offered by the appellant under Section 313 CrPC was found to be evasive and failed to\nrebut the incriminating circumstances.\nRATIO DECIDENDI",
+      "chunk_id": "chunk_8_facts"
+    },
+    {
+      "case_name": "Dummy_Complex_Court_Case_Judgment.pdf",
+      "paragraph_range": "11-11",
+      "section_type": "evidence",
+      "content": "11. When a complete chain of circumstantial evidence is established and the accused fails to offer a\nplausible explanation, conviction under Section 302 IPC can be sustained.\nFINAL ORDER",
+      "chunk_id": "chunk_9_evidence"
+    },
+    {
+      "case_name": "Dummy_Complex_Court_Case_Judgment.pdf",
+      "paragraph_range": "12-12",
+      "section_type": "reasoning",
+      "content": "12. In view of the foregoing discussion, this Court finds no merit in the appeal. The conviction and sentence\nimposed by the Sessions Court are hereby affirmed. The appeal is dismissed.",
+      "chunk_id": "chunk_10_reasoning"
+    },
     {
       "case_name": "Dummy_Complex_Court_Case_Judgment.pdf",
       "paragraph_range": "N/A",
