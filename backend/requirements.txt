@@ -1,8 +1,12 @@
 fastapi
 python-multipart
-pymupdf
 faiss-cpu
 numpy
 requests
 pydantic
 uvicorn
+google-cloud-aiplatform>=1.38.0
+google-auth
+python-dotenv
+sentence-transformers
+PyPDF2

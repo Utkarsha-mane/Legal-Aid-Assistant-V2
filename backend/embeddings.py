@@ -1,127 +1,68 @@
-import requests
-import json
-from typing import List, Dict, Any
-import numpy as np
+from typing import List
+from sentence_transformers import SentenceTransformer
 
 
-class OllamaEmbeddings:
+class OllamaEmbeddings:  # name kept for compatibility with existing imports
     """
-    Interface to Ollama's embedding API using nomic-embed-text model.
-    Handles batching and error recovery.
+    Local embeddings using sentence-transformers all-MiniLM-L6-v2.
+    No Ollama or external service required — runs fully offline.
     """
-    
-    def __init__(self, base_url: str = "http://localhost:11434", model: str = "nomic-embed-text"):
+
+    def __init__(self, model_name: str = "all-MiniLM-L6-v2", **kwargs):
         """
-        Initialize Ollama embeddings client.
-        
+        Initialize sentence-transformers embedding model.
+
         Args:
-            base_url: Ollama API endpoint
-            model: Embedding model name
+            model_name: HuggingFace model name (default: all-MiniLM-L6-v2)
         """
-        self.base_url = base_url
-        self.model = model
-        self.embed_url = f"{base_url}/api/embeddings"
-        
-    def check_model_availability(self) -> bool:
-        """
-        Verify that the embedding model is available in Ollama.
-        
-        Returns:
-            True if model is available, False otherwise
-        """
-        try:
-            response = requests.get(f"{self.base_url}/api/tags")
-            if response.status_code == 200:
-                models = response.json().get('models', [])
-                return any(m['name'].startswith(self.model) for m in models)
-        except Exception as e:
-            print(f"Error checking model availability: {e}")
-        return False
-    
+        self.model_name = model_name
+        print(f"[INFO] Loading sentence-transformer model: {model_name} ...")
+        self.model = SentenceTransformer(model_name)
+        print(f"[OK] Embedding model loaded: {model_name}")
+
     def embed_text(self, text: str) -> List[float]:
         """
         Generate embedding for a single text string.
-        
+
         Args:
             text: Input text to embed
-            
+
         Returns:
             Embedding vector as list of floats
-            
-        Raises:
-            Exception if embedding fails
         """
         try:
-            payload = {
-                "model": self.model,
-                "prompt": text
-            }
-            
-            response = requests.post(
-                self.embed_url,
-                json=payload,
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                result = response.json()
-                embedding = result.get('embedding', [])
-                if not embedding:
-                    # Treat empty embeddings as errors so callers can handle fallbacks
-                    raise Exception("Empty embedding returned from embedding service")
-                return embedding
-            else:
-                raise Exception(f"Embedding failed: {response.status_code} - {response.text}")
-                
+            embedding = self.model.encode(text, convert_to_numpy=True)
+            return embedding.tolist()
         except Exception as e:
             raise Exception(f"Error generating embedding: {str(e)}")
-    
+
     def embed_batch(self, texts: List[str], show_progress: bool = True) -> List[List[float]]:
         """
-        Generate embeddings for multiple texts with progress tracking.
-        
+        Generate embeddings for multiple texts efficiently (batched).
+
         Args:
             texts: List of text strings to embed
-            show_progress: Whether to print progress updates
-            
+            show_progress: Whether to show a tqdm progress bar
+
         Returns:
             List of embedding vectors
         """
-        embeddings = []
-        total = len(texts)
-        
-        for i, text in enumerate(texts):
-            try:
-                embedding = self.embed_text(text)
-                embeddings.append(embedding)
-                
-                if show_progress and (i + 1) % 5 == 0:
-                    print(f"Embedded {i + 1}/{total} chunks")
-                    
-            except Exception as e:
-                print(f"Warning: Failed to embed chunk {i}: {e}")
-                # Use zero vector as fallback
-                if embeddings:
-                    embeddings.append([0.0] * len(embeddings[0]))
-                else:
-                    embeddings.append([0.0] * 768)  # Default nomic-embed-text dimension
-        
-        if show_progress:
-            print(f"Embedding complete: {len(embeddings)}/{total} successful")
-        
-        return embeddings
-    
+        try:
+            embeddings = self.model.encode(
+                texts,
+                convert_to_numpy=True,
+                show_progress_bar=show_progress,
+                batch_size=32,
+            )
+            return embeddings.tolist()
+        except Exception as e:
+            raise Exception(f"Error generating batch embeddings: {str(e)}")
+
     def get_embedding_dimension(self) -> int:
         """
-        Get the dimensionality of embeddings from this model.
-        
+        Return the dimensionality of the embedding vectors.
+
         Returns:
-            Embedding vector dimension
+            384 for all-MiniLM-L6-v2
         """
-        try:
-            # Generate a test embedding to determine dimension
-            test_embedding = self.embed_text("test")
-            return len(test_embedding)
-        except:
-            # Default for nomic-embed-text
-            return 768
+        return 384
