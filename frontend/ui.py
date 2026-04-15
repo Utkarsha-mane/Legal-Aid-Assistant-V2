@@ -97,7 +97,7 @@ st.markdown("""
 
 st.markdown('<h1 class="main-header">⚖️ Legal Aid Assistant</h1>', unsafe_allow_html=True)
 st.markdown(
-    '<p class="sub-header">Upload legal documents and ask questions — powered by Google Gemini 1.5 Flash</p>',
+    '<p class="sub-header">Upload legal documents and ask questions</p>',
     unsafe_allow_html=True,
 )
 
@@ -128,7 +128,7 @@ Get your **free** API key at: https://aistudio.google.com/app/apikey
             st.stop()
 
         if gemini_status not in ("connected", "unknown"):
-            st.warning(f"⚠️ Gemini connectivity issue: `{gemini_status}`. Check your API key.")
+            st.warning(f"")
 
         col1, col2, col3, col4 = st.columns(4)
         with col1:
@@ -137,7 +137,7 @@ Get your **free** API key at: https://aistudio.google.com/app/apikey
         with col2:
             st.metric("Chunks Indexed", status.get("documents_indexed", 0))
         with col3:
-            st.metric("LLM Backend", "Gemini ✨")
+            st.metric("LLM Backend", "Gemini")
         with col4:
             st.write("")
             if st.button("🗑️ Delete All Chunks", use_container_width=True, key="delete_metrics"):
